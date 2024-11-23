@@ -1,9 +1,11 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
 
 from utils import search_arxiv, download_papers, ResearchPaper
 from prompts import formulate_search_query, assess_relevence_prompt
 from llm_wrapper import LLMWrapper
+
 
 class ResearchAssistant:
     """A class to assist with research through LLMs and Arxiv"""
@@ -16,13 +18,18 @@ class ResearchAssistant:
      
     # Sets up logging
     def _setup_logging(self):
+        log_path = "logs"
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+        
         self.logger = logging.getLogger(__name__)
-        if not self.logger.handlers:
-            handler = logging.FileHandler("research_assistant.log")
-            formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
-            self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.INFO)
+        log_file = os.path.join(log_path, "research_assistant.log")
+        handler = logging.FileHandler(log_file)
+        formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.INFO)
     
     # Generates a query for arXiv (Possibly make this more sophisticated)
     # Make a reshuffle if articles are found in search
