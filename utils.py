@@ -2,9 +2,22 @@ import arxiv
 import pymupdf
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+import logging
 from dataclasses import dataclass
 from typing import List, Optional    
+
+
+log_directory = 'logs'
+if not os.path.exists(log_directory):
+    os.makedirs(log_directory)
+    
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+log_file = os.path.join(log_directory, "utils.log")
+handler = logging.FileHandler(log_file)
+formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 @dataclass
 class ResearchPaper:
@@ -81,7 +94,7 @@ def download_papers(results, search_num = None, max_workers = 10):
         for future in as_completed(future_to_result):
             try:
                 pdf_path = future.result()
-                print(f"Downloading {future_to_result[future].title} to {pdf_path} ....")
+                logger.info(f"Downloading {future_to_result[future].title} to {pdf_path} ....")
                 paper = ResearchPaper(
                     title=future_to_result[future].title,
                     authors=future_to_result[future].authors,
@@ -92,7 +105,7 @@ def download_papers(results, search_num = None, max_workers = 10):
                     )
                 research_papers.append(paper)
             except Exception as exc:
-                print(f"{future_to_result[future].entry_id} generated an exception: {exc}")
+                logger.info(f"{future_to_result[future].entry_id} generated an exception: {exc}")
     
     return research_papers
 

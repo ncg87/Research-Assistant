@@ -2,34 +2,29 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
-from utils import search_arxiv, download_papers, ResearchPaper
-from prompts import formulate_search_query, assess_relevence_prompt
+from utils import ResearchPaper
 from llm_wrapper import LLMWrapper
+from manager import ResearchManager
 
+log_path = "logs"
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+    
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+log_file = os.path.join(log_path, "research_assistant.log")
+handler = logging.FileHandler(log_file)
+formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class ResearchAssistant:
     """A class to assist with research through LLMs and Arxiv"""
     
     def __init__(self, llm_name: str, max_papers: int = 5):
-        self.llm = LLMWrapper(llm_name)
-        
+        self.manager = ResearchManager(llm_name)
         self.max_papers = max_papers
-        self._setup_logging()
-     
-    # Sets up logging
-    def _setup_logging(self):
-        log_path = "logs"
-        if not os.path.exists(log_path):
-            os.makedirs(log_path)
-        
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        log_file = os.path.join(log_path, "research_assistant.log")
-        handler = logging.FileHandler(log_file)
-        formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logging.INFO)
     
     # Generates a query for arXiv (Possibly make this more sophisticated)
     # Make a reshuffle if articles are found in search
