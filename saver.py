@@ -40,22 +40,24 @@ class ResearchSaver:
         clean_topic = "".join(c for c in main_topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         dir_name = f"{clean_topic}_{timestamp}"
-        full_path = os.path.join(self.base_dir, dir_name)
+        full_path = os.path.join(self.base_directory, dir_name)
         os.makedirs(full_path)
         return full_path
     
     def _serialize_paper(self, paper: ResearchPaper) -> Dict[str, Any]:
         """Converts a research paper into a serializable dictionary"""
-        self.logger.info("Serializing paper: %s...", paper.title)
+        self.logger.info(f"Serializing paper: {paper.title}...")
         paper_dict = asdict(paper)
+        paper_dict["authors"] = [str(author) for author in paper.authors]
         # Adjust the pdf path to the relative directory
         if paper.pdf_path:
             paper_dict["pdf_path"] = os.path.basename(paper.pdf_path)
+        
         return paper_dict
     
     def _save_topic_analysis(self, research_analysis: ResearchAnalysis, research_directory: str):
         """Saves the information for a single topic"""
-        self.logger.info("Saving topic analysis for %s...", research_analysis.topic.topic)
+        self.logger.info(f"Saving topic analysis for {research_analysis.topic.topic}...")
         topic_dict = {
             'topic': research_analysis.topic.topic,
             'priority': research_analysis.topic.priority,
@@ -74,8 +76,9 @@ class ResearchSaver:
     
     def save_results(self, research_result: ResearchAnalysisResult):
         """Save the complete research analysis result"""
+
         try:
-            logger.info("Saving research results for %s...", research_result.main_topic)
+            logger.info(f"Saving research results for {research_result.main_topic}...")
             # Create main directory
             research_directory = self._create_research_directory(research_result.main_topic)
             # Save each individual topic analysis
@@ -90,8 +93,8 @@ class ResearchSaver:
             metadata = {
                 'main_topic': research_result.main_topic,
                 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'num_topics': len(research_result.research_analysis),
-                'topics': [ra.topic.topic for ra in research_result.research_analysis]
+                'num_topics': len(research_result.research_analyses),
+                'topics': [ra.topic.topic for ra in research_result.research_analyses]
             }
             
             metadata_path = os.path.join(research_directory, "metadata.json")
@@ -101,6 +104,6 @@ class ResearchSaver:
             return research_directory     
             
         except Exception as e:
-            self.logger.error("Error saving research results: %s", e)
+            self.logger.error(f"Error saving research results: {e}")
             raise e
             
