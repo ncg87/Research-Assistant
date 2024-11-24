@@ -27,7 +27,7 @@ class ResearchAnalyzer:
         self.llm = LLMWrapper(llm_name)
         self.logger = logger
         
-    def analyze_research(self, search_result: SearchResults) -> List[ResearchAnalysis]:
+    def analyze_research(self, search_result: SearchResults) -> ResearchAnalysisResult:
         """Analyzes the different research topics and Papers"""
         
         try:
@@ -44,7 +44,10 @@ class ResearchAnalyzer:
                 research_analysis.new_research = self._generate_new_research(research_analysis, search_result.research)
                 research_analyses.append(research_analysis)
                 
-            return research_analyses
+            return ResearchAnalysisResult(
+                main_topic=search_result.research,
+                research_analyses=research_analyses,
+            )
         except Exception as e:
             self.logger.error(f"Error analyzing research: {e}")
             raise e

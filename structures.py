@@ -49,6 +49,6 @@ class ResearchAnalysis:
 class ResearchAnalysisResult:
     """Contains the analysis of a research topic"""
     main_topic: str
-    research_analysis: List[ResearchAnalysis]
-    final_summary: str
+    research_analyses: List[ResearchAnalysis]
+    final_summary: str = None
     
