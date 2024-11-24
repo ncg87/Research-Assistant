@@ -31,7 +31,7 @@ class ResearchManager:
         self.llm = LLMWrapper(llm_name)
         self.logger = logging.getLogger(__name__)
         
-    def analyze_research(self, research: str) -> AnalysisResult:
+    def research(self, research: str):
         """Analyzes the question and returns a list of research focus areas"""
         max_retries = 3
         try:
@@ -47,7 +47,7 @@ class ResearchManager:
             # Check the relevance of the papers to the research topics
             research_topics = self._check_abstract_relevence(papers, research_topics, title_indices)
             # Return the research topics
-            return AnalysisResult(
+            return SearchResults(
                 research=research,
                 research_topics=research_topics
             )

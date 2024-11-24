@@ -4,15 +4,8 @@ import os
 import logging
 
 from llm_wrapper import LLMWrapper
-from structures import ResearchTopic, SearchResults, ResearchPaper, ResearchAnalysis
-from prompts import formulate_topic_importance, formulate_topic_summary
-    
-@dataclass
-class ResearchAnalysisResult:
-    """Contains the analysis of a research topic"""
-    main_topic: str
-    research_analysis: List[ResearchAnalysis]
-    final_summary: str
+from structures import ResearchTopic, SearchResults, ResearchPaper, ResearchAnalysis, ResearchAnalysisResult
+from prompts import formulate_topic_importance, formulate_topic_summary, formulate_new_research
 
 # Sets up logging
 log_directory = 'logs'
@@ -34,19 +27,24 @@ class ResearchAnalyzer:
         self.llm = LLMWrapper(llm_name)
         self.logger = logger
         
-    def analyze_research(self, search_result: SearchResult):
+    def analyze_research(self, search_result: SearchResults) -> List[ResearchAnalysis]:
         """Analyzes the different research topics and Papers"""
         
         try:
             self.logger.info(f"Analyzing research: {search_result.research}...")
             research_analyses = []
+            
+            # Analyze and create new prompts for each topic
             for topic in search_result.research_topics:
                 # Analyze the papers for the topic
                 research_analysis = self._analyze_papers(search_result.research, topic)
                 # Generate a summary for the topic
-                research_analyses.append(self._generate_topic_summary(research_analysis))
+                research_analysis.topic_summary = self._generate_topic_summary(research_analysis)
+                # Generate a new prompt giving the new research
+                research_analysis.new_research = self._generate_new_research(research_analysis, search_result.research)
+                research_analyses.append(research_analysis)
                 
-            final_summary = self._generate_final_summary(research_analyses)
+            return research_analyses
         except Exception as e:
             self.logger.error(f"Error analyzing research: {e}")
             raise e
@@ -54,7 +52,7 @@ class ResearchAnalyzer:
     def _analyze_papers(self, main_research: str, topic: ResearchTopic) -> ResearchAnalysis:
         """Analyzes the papers for a given research topic"""
         try:
-            
+            self.logger.info(f"Analyzing papers for topic: {topic.topic}...")
             paper_analyses = []
             for paper in topic.research_papers:
                 
@@ -71,16 +69,42 @@ class ResearchAnalyzer:
             paper_analyses=paper_analyses,
         )
         
-    def _generate_topic_summary(self, research_analysis: ResearchAnalysis) -> ResearchAnalysis:
+    def _generate_topic_summary(self, research_analysis: ResearchAnalysis) -> str:
         """Generates a summary for a research topic"""
-        
-        prompt = formulate_topic_summary(research_analysis)
-        research_analysis.topic_summary = self.llm.get_response(prompt)
-        return research_analysis
+        try:
+            self.logger.info(f"Generating topic summary for topic: {research_analysis.topic.topic}...")
+            paper_summaries = "\n\n".join([
+                f"Paper Analysis {i+1}:\n{analysis}" 
+                for i, analysis in enumerate(research_analysis.paper_analyses)
+            ])
+            prompt = formulate_topic_summary(research_analysis.topic.topic, paper_summaries)
+            topic_summary = self.llm.get_response(prompt)
+        except Exception as e:
+            self.logger.error(f"Error generating topic summary: {e}")
+            raise e
+        return topic_summary
+    
+    def _generate_new_research(self, research_analysis: ResearchAnalysis, original_reseach:str) -> str:
+        """Generates a new research prompt"""
+        try:
+            prompt = formulate_new_research(original_reseach, research_analysis.topic.topic, research_analysis.topic_summary)
+            new_research = self.llm.get_response(prompt)
+        except Exception as e:
+            self.logger.error(f"Error generating new research: {e}")
+            raise e
+        return new_research
      
     def _generate_final_summary(self, research_analyses: List[ResearchAnalysis]):
         pass
-        
+    
+    def _save_research_analysis(self, research_analysis: ResearchAnalysisResult):
+        """Saves the research analysis to a file"""
+        try:
+            self.logger.info(f"Saving research analysis to file...")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving research analysis: {e}")
+            raise e
 
     
         

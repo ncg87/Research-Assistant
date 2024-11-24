@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import List, Optional  
 
-from structures import ResearchPaper  
+from structures import ResearchPaper, ResearchAnalysis
 
 
 log_directory = 'logs'
@@ -70,9 +70,6 @@ def search_new_arxiv(query: str, max_results: int = 5):
 def get_pdf(result, path):
     return result.download_pdf(dirpath = path)
 
-def pdf_to_text(pdf):
-    return pdf.read_text()
-
 def download_papers(results, search_num = None, max_workers = 10):
     
     papers_dir = f"./papers/"
@@ -112,6 +109,3 @@ def pdf_to_text(pdf_path):
     # Return the text
     return text
 
-def parse_citations(text):
-    """Parses citations from a string of text"""
-    pass

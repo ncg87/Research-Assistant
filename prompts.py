@@ -120,9 +120,10 @@ RELATED SUB-TOPIC: {topic}
 
 PAPER DETAILS:
 Title: {paper.title}
-Authors: {', '.join(paper.authors)}
-URL: {paper.url}
-Abstract: {paper.abstract}
+Authors: {', '.join(str(author) for author in paper.authors)}
+
+CONTENT:
+{paper.content}
 
 REQUIREMENTS:
 1. Provide specific examples and details from the paper
@@ -141,7 +142,8 @@ OUTPUT FORMAT:
 3. Potential Extensions/Adaptations
 4. Implementation Considerations and how to apply the paper to the original topic
 5. Information Gaps (if any)
-6. Conclusion
+6. Real life applications of the paper
+7. Conclusion
 
 Do not use phrases like "Based on the absence of selected results" or similar.
 If content lacks sufficient information, explicitly state what is missing and why it matters.
@@ -150,5 +152,102 @@ Provide as much relevant detail as possible from the available content.
 
     return prompt
 
-def formulate_topic_summary(research_analysis: str):
-    pass
+def formulate_topic_summary(topic, paper_summaries) -> str:
+    """
+    Generates a prompt to synthesize multiple paper analyses into a comprehensive topic summary.
+    
+    Args:
+        research_analysis: ResearchAnalysis object containing topic and paper analyses
+        
+    Returns:
+        str: Formatted topic summary prompt
+    """
+    
+    # Format paper analyses for inclusion in prompt
+    
+    
+    prompt = f"""<instruction>
+TASK: Synthesize the following paper analyses into a comprehensive summary of how this research topic relates to and advances the original research direction.
+
+RESEARCH TOPIC: {topic}
+
+PAPER ANALYSES:
+{paper_summaries}
+
+REQUIREMENTS:
+1. Synthesize common themes and findings across all papers
+2. Identify complementary methodologies and approaches
+3. Highlight unique contributions from each paper
+4. Note any conflicting findings or methodologies
+5. Identify collective technical requirements for implementation
+6. Aggregate information gaps across papers
+7. Do not make assumptions about unstated connections
+8. State explicitly where consensus exists or is lacking
+9. Maintain paper-specific citations using [Author : Title] format
+
+OUTPUT FORMAT:
+1. Topic Overview (5-6 sentences covering the collective scope of all papers)
+2. Key Findings and Methodologies
+   - Common themes across papers
+   - Unique contributions
+   - Conflicting or complementary approaches
+3. Collective Applications and Implementation
+   - Shared technical requirements
+   - Combined implementation considerations
+   - Integration challenges
+4. Research Gaps and Future Directions
+   - Common information gaps
+   - Unexplored areas
+   - Potential research directions
+5. Synthesis and Recommendations
+   - Overall assessment of topic's contribution
+   - Suggested next steps for implementation
+   - Critical considerations
+   - Real life applications of the combined technologies
+   
+
+Do not use phrases like "Based on the absence of selected results" or similar.
+If collective content lacks sufficient information in any area, explicitly state what is missing and why it matters.
+Provide as much relevant detail as possible from the available analyses.
+</instruction>"""
+
+    return prompt
+
+# Maybe add sibling topics in this prompt in the future
+def formulate_new_research(original_research: str, topic: str, topic_summary: str) -> str:
+    """
+    Generates a prompt to formulate new research directions based on a topic summary.
+    
+    Args:
+        original_research (str): The original research question to avoid repetition
+        topic (str): The specific topic that was explored
+        topic_summary (str): Summary of findings from the topic exploration
+        
+    Returns:
+        str: Formatted prompt for generating new research direction
+    """
+    
+    prompt = f"""<instruction>
+TASK: Generate a single new research direction based on gaps or opportunities identified in the topic summary.
+
+CONTEXT:
+Original Research: {original_research}
+Explored Topic: {topic}
+Topic Summary: {topic_summary}
+
+REQUIREMENTS:
+- Must be different from the original research and explored topic
+- Must build upon findings in the topic summary
+- Must address an unexplored angle or gap
+- Must be forward-looking and actionable
+- Must be exactly one sentence
+- Avoid generic or broad statements
+- Include specific technical focus areas
+- Do not use phrases like "investigating" or "exploring"
+- Focus on concrete objectives
+
+OUTPUT FORMAT:
+[Single sentence describing new specific research direction]
+</instruction>"""
+
+    return prompt

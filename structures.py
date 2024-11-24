@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class ResearchPaper:
     """A class to store a research paper"""
     title: str
-    authors: List[str]
+    authors: List
     abstract: str
     url: str
     pdf_path: Optional[str] = None
@@ -43,5 +43,12 @@ class ResearchAnalysis:
     topic: ResearchTopic
     paper_analyses: List[str]
     topic_summary: str = None
-            
+    new_research: str = None
+
+@dataclass
+class ResearchAnalysisResult:
+    """Contains the analysis of a research topic"""
+    main_topic: str
+    research_analysis: List[ResearchAnalysis]
+    final_summary: str
     
