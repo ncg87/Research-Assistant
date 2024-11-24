@@ -1,3 +1,6 @@
+from structures import ResearchPaper
+
+
 def formulate_search_query(topic: str, previous_topics: str):
     """Formulates an effective search query for arXiv"""
     prompt = f"""<instruction>
@@ -95,3 +98,57 @@ Example output format:
 </instruction>"""
     
     return prompt
+
+def formulate_topic_importance(original_topic: str, topic: str, paper: ResearchPaper) -> str:
+    """
+    Generates a prompt to analyze how a research paper relates to and can be applied to the original topic.
+    
+    Args:
+        original_topic (str): Main research topic
+        topic (str): Related sub-topic
+        paper (ResearchPaper): Paper to analyze
+        
+    Returns:
+        str: Formatted analysis prompt
+    """
+    
+    prompt = f"""<instruction>
+TASK: Analyze how this research paper's findings and methodologies can be applied to or expand upon the original research topic.
+
+ORIGINAL RESEARCH TOPIC: {original_topic}
+RELATED SUB-TOPIC: {topic}
+
+PAPER DETAILS:
+Title: {paper.title}
+Authors: {', '.join(paper.authors)}
+URL: {paper.url}
+Abstract: {paper.abstract}
+
+REQUIREMENTS:
+1. Provide specific examples and details from the paper
+2. Include direct connections to the original topic
+3. Specify technical requirements for implementation
+4. Note any gaps between paper focus and original topic
+5. Do not make assumptions about unstated results
+6. State explicitly if information is insufficient
+7. Include all relevant details from paper content
+8. Do not use phrases like "Based on the absence of selected results" or similar.
+9. If the information is paraphrased from the paper cite the first author using " [Author : Title]"
+
+OUTPUT FORMAT:
+1. Brief Overview (5-6 sentences)
+2. Direct Applications to {original_topic}
+3. Potential Extensions/Adaptations
+4. Implementation Considerations and how to apply the paper to the original topic
+5. Information Gaps (if any)
+6. Conclusion
+
+Do not use phrases like "Based on the absence of selected results" or similar.
+If content lacks sufficient information, explicitly state what is missing and why it matters.
+Provide as much relevant detail as possible from the available content.
+</instruction>"""
+
+    return prompt
+
+def formulate_topic_summary(research_analysis: str):
+    pass

@@ -4,7 +4,9 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from dataclasses import dataclass
-from typing import List, Optional    
+from typing import List, Optional  
+
+from structures import ResearchPaper  
 
 
 log_directory = 'logs'
@@ -18,16 +20,6 @@ handler = logging.FileHandler(log_file)
 formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
-@dataclass
-class ResearchPaper:
-    """A class to store a research paper"""
-    title: str
-    authors: List[str]
-    abstract: str
-    url: str
-    pdf_path: Optional[str] = None
-    content: Optional[str] = None
 
 
 # Searchs for papers and returns them in a list
