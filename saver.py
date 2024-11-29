@@ -61,6 +61,7 @@ class ResearchSaver:
         topic_dict = {
             'topic': research_analysis.topic.topic,
             'priority': research_analysis.topic.priority,
+            'new_research': research_analysis.new_research,
             'query': research_analysis.topic.query,
             'timestamp': research_analysis.topic.timestamp,
             'papers': [self._serialize_paper(paper) for paper in research_analysis.topic.research_papers],
@@ -106,4 +107,5 @@ class ResearchSaver:
         except Exception as e:
             self.logger.error(f"Error saving research results: {e}")
             raise e
+    
             

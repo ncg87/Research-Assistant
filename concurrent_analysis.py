@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from llm_wrapper import LLMWrapper
 from structures import ResearchTopic, SearchResults, ResearchPaper, ResearchAnalysis, ResearchAnalysisResult
@@ -20,12 +21,13 @@ formatter = logging.Formatter("%(asctime)s -  %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-class ResearchAnalyzer:
+class ConcurrentResearchAnalyzer:
     """A class to analyze research"""
     
     def __init__(self, llm_name: str):
         self.llm = LLMWrapper(llm_name)
         self.logger = logger
+        self.max_workers = 8
         
     def analyze_research(self, search_result: SearchResults) -> ResearchAnalysisResult:
         """Analyzes the different research topics and Papers"""
@@ -34,15 +36,10 @@ class ResearchAnalyzer:
             self.logger.info(f"Analyzing research: {search_result.research}...")
             research_analyses = []
             
-            # Analyze and create new prompts for each topic
-            for topic in search_result.research_topics:
-                # Analyze the papers for the topic
-                research_analysis = self._analyze_papers(search_result.research, topic)
-                # Generate a summary for the topic
-                research_analysis.topic_summary = self._generate_topic_summary(research_analysis)
-                # Generate a new prompt giving the new research
-                research_analysis.new_research = self._generate_new_research(research_analysis, search_result.research)
-                research_analyses.append(research_analysis)
+            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                futures = [executor.submit(self._analyze_topic, search_result.research, topic) for topic in search_result.research_topics]
+                for future in as_completed(futures):
+                    research_analyses.append(future.result())
                 
             return ResearchAnalysisResult(
                 main_topic=search_result.research,
@@ -51,7 +48,19 @@ class ResearchAnalyzer:
         except Exception as e:
             self.logger.error(f"Error analyzing research: {e}")
             raise e
-        
+    
+    def _analyze_topic(self, main_research: str, topic: ResearchTopic) -> ResearchAnalysis:
+        """Analyzes a research topic"""
+        try:
+            self.logger.info(f"Analyzing topic: {topic.topic}...")
+            research_analysis = self._analyze_papers(main_research, topic)
+            research_analysis.topic_summary = self._generate_topic_summary(research_analysis)
+            research_analysis.new_research = self._generate_new_research(research_analysis, main_research)
+            return research_analysis
+        except Exception as e:
+            self.logger.error(f"Error analyzing topic: {e}")
+            raise e
+
     def _analyze_papers(self, main_research: str, topic: ResearchTopic) -> ResearchAnalysis:
         """Analyzes the papers for a given research topic"""
         try:
@@ -100,5 +109,5 @@ class ResearchAnalyzer:
     def _generate_final_summary(self, research_analyses: List[ResearchAnalysis]):
         pass
     
-
+    
         

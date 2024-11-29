@@ -54,4 +54,4 @@ class ResearchAssistant:
             self.logger.error(f"Error saving research analyses: {e}")
             raise e
         
-        
+    
