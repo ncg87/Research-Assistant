@@ -16,3 +16,10 @@ __pycache__
 pickle_handler.py
 research_results
 __clean_up__
+./__clean_up__/*.ipynb
+./__clean_up__/*.py
+./__clean_up__/*.txt
+./__clean_up__/*.json
+./__clean_up__/*.csv
+./__clean_up__/*.log
+./__clean_up__/*.txt
