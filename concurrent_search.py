@@ -28,14 +28,13 @@ logger.addHandler(handler)
         
 class ConcurrentResearchManager:
     """Manages the research process"""
-    def __init__(self, llm_name: str):
-        self.llm = LLMWrapper(llm_name)
-        self.logger = logging.getLogger(__name__)
-        self.max_workers = 8
+    def __init__(self, llm_name: str, max_workers: int = 8, tokens_per_minute: int = 80000):
+        self.llm = LLMWrapper(llm_name, tokens_per_minute)
+        self.logger = logger
+        self.max_workers = max_workers
         
     def research(self, research: str) -> SearchResults:
         """Analyzes the question and returns a list of research focus areas"""
-        max_retries = 3
         try:
             self.logger.info(f"Analyzing research: {research}....")
 
@@ -51,7 +50,7 @@ class ConcurrentResearchManager:
                 futures = [executor.submit(self._research_topic, topic, papers) for topic in research_topics]
                 for future in as_completed(futures):
                     research_results.append(future.result())
-            
+            self.logger.info(f"Research finished: {research}....")
             # Return the research topics
             return SearchResults(
                 research=research,
@@ -112,19 +111,6 @@ class ConcurrentResearchManager:
         # Return the list of research topics
         return research_topics
     
-    def _conduct_research(self, research_topic: ResearchTopic, max_retries: int = 3)-> ResearchTopic:
-        """Conducts research for a single topic"""
-        try:
-            self.logger.info(f"Conducting research for topic: {research_topic.topic}....")
-            for attempt in range(max_retries):
-                # Generate a search query for the topic
-                prompt = formulate_search_query(research_topic.topic, previous_topics)
-                response = self.llm.get_response(prompt)
-                previous_topics += response + ", "
-                research_topic.query = response
-        except Exception as e:
-            self.logger.error(f"Error conducting research: {e}")
-            raise e
     def _get_research_queries(self, research_topics: List[ResearchTopic]):
         try:
             self.logger.info(f"Generating search queries for {len(research_topics)} research topics....")
@@ -167,6 +153,7 @@ class ConcurrentResearchManager:
             title_indices = self._check_title(research_topic, papers)
             # Check the relevence of the abstracts of the papers
             research_topic = self._check_abstract(research_topic, papers, title_indices)
+            self.logger.info(f"Research topic finished: {research_topic.topic}....")
             return research_topic
         except Exception as e:
             self.logger.error(f"Error conducting research: {e}")

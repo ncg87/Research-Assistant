@@ -21,11 +21,11 @@ Output format:
 [search terms only]"""
     return prompt
 
-def formulate_research_topics(research: str):
+def formulate_research_topics(research: str, num_topics: int = 5):
     """Formulates effective research topic for an arXiv query"""
     
     prompt = f"""<instruction>
-Convert the following research topic into a 5 different research topics that can be used to expand on the original topic. These research topics will be used to search for papers on arXiv.
+Convert the following research topic into a {num_topics} different research topics that can be used to expand on the original topic. These research topics will be used to search for papers on arXiv.
 Topic: {research}
 
 Requirements:

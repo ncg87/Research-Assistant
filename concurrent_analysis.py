@@ -3,9 +3,13 @@ from typing import List
 import os
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+from datetime import datetime, timedelta
+from collections import deque
+import threading
 
 from llm_wrapper import LLMWrapper
-from structures import ResearchTopic, SearchResults, ResearchPaper, ResearchAnalysis, ResearchAnalysisResult
+from structures import ResearchTopic, SearchResults, ResearchPaper, ResearchAnalysis, ResearchAnalysisResult, TokenUsage
 from prompts import formulate_topic_importance, formulate_topic_summary, formulate_new_research
 
 # Sets up logging
@@ -24,10 +28,10 @@ logger.addHandler(handler)
 class ConcurrentResearchAnalyzer:
     """A class to analyze research"""
     
-    def __init__(self, llm_name: str):
-        self.llm = LLMWrapper(llm_name)
+    def __init__(self, llm_name: str, max_workers: int = 8, tokens_per_minute: int = 80000):
+        self.llm = LLMWrapper(llm_name, tokens_per_minute)
         self.logger = logger
-        self.max_workers = 8
+        self.max_workers = max_workers
         
     def analyze_research(self, search_result: SearchResults) -> ResearchAnalysisResult:
         """Analyzes the different research topics and Papers"""
@@ -41,6 +45,7 @@ class ConcurrentResearchAnalyzer:
                 for future in as_completed(futures):
                     research_analyses.append(future.result())
                 
+            self.logger.info(f"Research analysis finished: {search_result.research}....")
             return ResearchAnalysisResult(
                 main_topic=search_result.research,
                 research_analyses=research_analyses,
@@ -67,7 +72,7 @@ class ConcurrentResearchAnalyzer:
             self.logger.info(f"Analyzing papers for topic: {topic.topic}...")
             paper_analyses = []
             for paper in topic.research_papers:
-                
+                self.logger.info(f"Analyzing paper: {paper.title}...")
                 prompt = formulate_topic_importance(main_research, topic.topic, paper)     
                 analysis = self.llm.get_response(prompt)
                 paper_analyses.append(analysis)

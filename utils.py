@@ -4,7 +4,9 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from dataclasses import dataclass
-from typing import List, Optional  
+from typing import List, Optional, Tuple  
+import re
+
 
 from structures import ResearchPaper, ResearchAnalysis
 
@@ -108,4 +110,68 @@ def pdf_to_text(pdf_path):
         text += page.get_text()
     # Return the text
     return text
+
+def split_into_sections(text: str) -> List[str]:
+    """Split text into sections based on common research paper headers"""
+    section_headers = [
+        "abstract", "introduction", "background", "related work",
+        "methodology", "method", "approach", "implementation",
+        "results", "evaluation", "discussion", "conclusion",
+        "future work", "references"
+    ]
+    
+    # Add common section number patterns
+    numbered_patterns = [
+        r'\d+\.\s+\w+',  # "1. Introduction"
+        r'[IVX]+\.\s+\w+',  # "IV. Results"
+    ]
+    
+    current_section = ""
+    sections = []
+    lines = text.split('\n')
+    
+    for line in lines:
+        line_lower = line.lower().strip()
+        
+        # Check if line is a section header
+        is_header = (
+            line_lower in section_headers or
+            any(re.match(pattern, line, re.IGNORECASE) for pattern in numbered_patterns)
+        )
+        
+        if is_header:
+            if current_section:
+                sections.append(current_section)
+            current_section = line + "\n"
+        else:
+            current_section += line + "\n"
+            
+    if current_section:
+        sections.append(current_section)
+        
+    return sections
+
+def create_chunks_with_sections(text: str, chunk_size: int = 4000) -> List[Tuple[str, str]]:
+    """Creates chunks while preserving section context"""
+    sections = split_into_sections(text)
+    chunks = []
+    current_chunk = ""
+    current_section = ""
+    
+    for section in sections:
+        # If adding this section would exceed chunk size
+        if len(current_chunk) + len(section) > chunk_size:
+            if current_chunk:
+                chunks.append((current_section, current_chunk))
+            current_chunk = section
+            current_section = section.split('\n')[0]  # First line is header
+        else:
+            current_chunk += section
+            if not current_section:
+                current_section = section.split('\n')[0]
+    
+    if current_chunk:
+        chunks.append((current_section, current_chunk))
+        
+    return chunks
 
