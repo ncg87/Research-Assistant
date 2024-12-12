@@ -1,25 +1,23 @@
 # Research Assistant
 
 ## Overview
-Research Assistant is a powerful tool that automates academic research by combining arXiv paper discovery with Large Language Model (LLM) analysis. The system helps researchers explore topics deeply by automatically finding relevant papers, analyzing their content, and suggesting new research directions.
+Research Assistant is a command-line tool that automates academic research by combining arXiv paper discovery with Large Language Model (LLM) analysis. Through an interactive CLI interface, researchers can explore topics, analyze papers, and discover new research directions with real-time progress tracking.
 
 ## Features
+- **Interactive CLI**: User-friendly command-line interface with menus and progress tracking
+- **Real-time Progress**: Visual feedback on search, analysis, and saving phases
 - **Multi-LLM Support**: Compatible with multiple LLM providers (Claude, GPT-4, LLaMA, Gemini)
 - **Concurrent Processing**: Efficient parallel processing of papers and research topics
-- **Intelligent Paper Selection**: Automatically evaluates paper relevance through title and abstract analysis
-- **Deep Content Analysis**: Analyzes full paper content to extract key findings and methodologies
 - **Research Synthesis**: Generates topic summaries and identifies new research directions
-- **Progress Tracking**: Real-time visual progress tracking with detailed status updates
 - **Result Export**: Structured saving of research results and analyses
 
 ## Installation
 
 ### Prerequisites
 - Python 3.8+
-- Poetry (recommended for dependency management)
 
 ### Required API Keys
-Create a `.env` file in the project root with your API keys:
+Create a `.env` file in the project root with at least one API key:
 ```
 CLAUDE_API_KEY=your_claude_key
 OPENAI_API_KEY=your_openai_key
@@ -39,59 +37,58 @@ cd research-assistant
 pip install -r requirements.txt
 ```
 
-## Usage
+## CLI Usage
 
-### Command Line Interface
-Run the assistant using:
+### Starting the Interface
 ```bash
 python interface.py
 ```
 
-The CLI provides options to:
+### Main Menu Options
+1. **Start New Research**: Begin a new research topic
+2. **Settings**: Configure tool parameters
+3. **Exit**: Close the application
+
+### Research Flow
+1. Enter your research topic when prompted
+2. Watch real-time progress through three phases:
+   - Search Phase: Finding and filtering relevant papers
+   - Analysis Phase: Processing paper content
+   - Saving Phase: Storing results
+
+### Viewing Results
+After analysis completes, you can:
+- Save individual topic analyses
+- View detailed results
+- Continue research on generated topics
 - Start new research
-- Adjust settings
-- View and export results
-- Continue research based on generated directions
+- Modify settings
 
-### Configuration
-Modify `settings.json` to customize:
-- Number of research topics
-- Maximum papers per topic
-- Default LLM
-- Save directory
+### Settings Configuration
+Through the CLI, you can adjust:
+- Number of research topics (default: 5)
+- Maximum papers per topic (default: 3)
+- LLM provider (based on available API keys)
+- Save directory for results
 
-### Example Usage
-```python
-from ResearchAssistant import ResearchAssistant
+### Progress Display
+The CLI shows real-time progress with:
+- Color-coded progress bars for each phase
+- Current operation status
+- Paper and topic tracking
+- Detailed status messages
 
-# Initialize with preferred LLM
-assistant = ResearchAssistant(llm_name="CLAUDE")
-
-# Start new research
-results = assistant.new_research("quantum computing applications in cryptography")
+## Requirements
 ```
-
-## Project Structure
-
-### Core Components
-- `ResearchAssistant.py`: Main orchestrator class
-- `concurrent_search.py`: Handles paper discovery and filtering
-- `concurrent_analysis.py`: Manages paper analysis and synthesis
-- `llm_wrapper.py`: Unified interface for different LLM providers
-- `interface.py`: Command-line interface implementation
-
-### Supporting Modules
-- `structures.py`: Data structures and models
-- `utils.py`: Helper functions for paper processing
-- `prompts.py`: LLM prompt templates
-- `saver.py`: Result storage and export
-- `progress/`: Progress tracking and visualization
-
-## Rate Limiting
-The system includes sophisticated rate limiting for API calls:
-- Token-based rate limiting with rolling windows
-- Concurrent request management
-- Automatic request retry with exponential backoff
+arxiv==2.0.0
+anthropic==0.8.1
+openai==1.12.0
+google-generativeai==0.3.2
+PyMuPDF==1.23.8
+rich==13.7.0
+python-dotenv==1.0.1
+llamaapi==0.1.38
+```
 
 ## Output Structure
 Research results are saved in a structured format:
@@ -114,9 +111,8 @@ Contributions are welcome! Please follow these steps:
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
-- ArXiv for providing research paper access
-- Anthropic, OpenAI, Meta, and Google for LLM APIs
+## Credits
+Inspired by [Automated-AI-Web-Researcher-Ollama](https://github.com/TheBlewish/Automated-AI-Web-Researcher-Ollama)
 
 ## Troubleshooting
 
@@ -130,10 +126,3 @@ Logs are stored in the `logs/` directory:
 - `llm_search.log`: Paper discovery logs
 - `llm_analyzer.log`: Analysis process logs
 - `research_assistant.log`: General operation logs
-
-## Future Development
-- [ ] Web interface implementation
-- [ ] Additional LLM provider support
-- [ ] Enhanced paper filtering algorithms
-- [ ] Citation network analysis
-- [ ] Research visualization tools
