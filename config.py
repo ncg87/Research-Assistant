@@ -1,5 +1,6 @@
 import os
 import dotenv
+from typing import Optional
 
 class Config:
     """A class to store configuration"""
@@ -21,18 +22,19 @@ class Config:
         # Temperature
         self.TEMPERATURE = os.getenv("TEMPERATURE")
     
-    def get_default_model(self) -> Optional[str]:
-        """Returns the first available model as default"""
-        available = self.get_available_models()
-        return available[0] if available else None
     
     def has_any_api_keys(self) -> bool:
         """Check if any API keys are configured"""
-        return any(key is not None for key in self.api_keys.values())
+        return any(key is not None for key in self.API_KEYS.values())
     
     def get_available_llms(self):
         """Returns a list of available LLMs"""
         return [model for model, key in self.API_KEYS.items() if key is not None]
+    
+    def get_default_model(self) -> Optional[str]:
+        """Returns the first available model as default"""
+        available = self.get_available_llms()
+        return available[0] if available else None
     
     # Returns the API key for a given LLM
     def get_api_key(self, llm_name: str):
